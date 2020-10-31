@@ -1,0 +1,6 @@
+.DS_Store
+.~lock*
+*.log
+.idea
+.env
+docker-compose.override.yml

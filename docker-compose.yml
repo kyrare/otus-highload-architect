@@ -1,0 +1,134 @@
+version: '3'
+
+networks:
+  laravel:
+
+services:
+
+  #Nginx Service
+  nginx:
+    container_name: nginx
+    build: ./docker/nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      EMAIL: $PROJ_EMAIL
+      DOMAINS: $PROJ_DOMAINS
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ${PATH_TO_HTML}
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - laravel
+
+  # MySQL Service
+  mysql:
+    image: mysql:5.7.29
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - laravel
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+      - ./docker/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    expose:
+      - "6379"
+    networks:
+      - laravel
+
+  # PHP Service
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: php
+    restart: unless-stopped
+    volumes:
+      - ${PATH_TO_HTML}
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    ports:
+      - "9000:9000"
+    depends_on:
+      - redis
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_HOST: 'redis'
+    networks:
+      - laravel
+
+  # Composer
+  composer:
+    image: composer:latest
+    container_name: composer
+    restart: unless-stopped
+    volumes:
+      - ${PATH_TO_HTML}
+    working_dir: /var/www/html
+    depends_on:
+      - php
+    entrypoint: ['composer', '--ignore-platform-reqs']
+    networks:
+      - laravel
+
+  # NPM
+  npm:
+    image: node:13.7
+    container_name: npm
+    volumes:
+      - ${PATH_TO_HTML}
+    working_dir: /var/www/html
+    entrypoint: ['npm']
+
+  # Artisan
+  artisan:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: artisan
+    volumes:
+      - ${PATH_TO_HTML}
+    depends_on:
+      - mysql
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+    working_dir: /var/www/html
+    entrypoint: ['php', '/var/www/html/artisan']
+    networks:
+      - laravel
+
+
+
+# Volumes
+volumes:
+  mysql:
+    driver: local
+
+  redis:
+    driver: local
