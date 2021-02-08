@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +17,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('home');
+})->name('home');
+
+Route::get('/auth', [LoginController::class, 'form'])->name('login');
+Route::post('/auth', [LoginController::class, 'login']);
+
+Route::get('/register', [RegisterController::class, 'form'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+
+Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/users', [UsersController::class, 'index'])->name('users');
+Route::get('/users/{id}', [UsersController::class, 'show'])->name('users-show');
+Route::post('/users/{id}', [UsersController::class, 'addFriend'])->name('users-add-friend');
