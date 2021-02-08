@@ -67,7 +67,7 @@
                     <b>Возраст:</b> {{ \Carbon\Carbon::parse($user['birthday'])->age }} лет
                 </li>
                 <li>
-                    <b>Пол:</b> {{ $user['birthday'] == \App\Models\User::SEX_MALE ? 'Мужской' : 'Женский' }}
+                    <b>Пол:</b> {{ $user['sex'] == \App\Models\User::SEX_MALE ? 'Мужской' : 'Женский' }}
                 </li>
                 <li>
                     <b>Город:</b> {{ $user['city'] }}
