@@ -15,10 +15,19 @@ class UsersController
         $connection = DB::connection();
         $pdo = $connection->getPdo();
 
-        $users = $pdo->query('SELECT id, name, surname FROM users ORDER BY id DESC LIMIT 100')->fetchAll();
+        $search = request()->get('q');
+
+        if ($search) {
+            $s = "SELECT id, name, surname FROM users WHERE name LIKE '{$search}%' OR surname LIKE '{$search}%' ORDER BY id DESC LIMIT 100";
+        } else {
+            $s = 'SELECT id, name, surname FROM users ORDER BY id DESC LIMIT 100';
+        }
+
+        $users = $pdo->query($s)->fetchAll();
 
         return view('users.index', compact(
             'users',
+            'search',
         ));
     }
 

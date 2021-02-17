@@ -31,3 +31,9 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/users', [UsersController::class, 'index'])->name('users');
 Route::get('/users/{id}', [UsersController::class, 'show'])->name('users-show');
 Route::post('/users/{id}', [UsersController::class, 'addFriend'])->name('users-add-friend');
+
+
+// k6 run --vus 10 --duration 10s --summary-export=src/storage/app/public/performance/search-2.json src/resources/js/performance/search.js
+Route::get('/units/2', function () {
+    return view('units.2');
+})->name('unit-2');
